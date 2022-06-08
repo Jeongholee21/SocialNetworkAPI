@@ -1,54 +1,45 @@
 const { Schema, model } = require("mongoose");
+const thoughtSchema = require("./Thought");
 
-const userSchema = new Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
+const userSchema = new Schema({
+    username: { 
+        type: String, 
+        unique: [true, "That username is already in use!"], 
+        required: [true,"Username should not be empty"], 
+        trim: true 
     },
 
     email: {
-      type: String,
-      unique: true,
-      required: true,
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        "Use a valid E-mail address.",
-      ],
-    },
+        type: String,
+        unique: [true, "That email is already in use!"], 
+        required:[true,"Email should not be empty"], 
+        match: [
+          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+          "Please enter a valid email address.",
+        ],
+      },
 
-    thoughts: [
-      {
+    thoughts: [{
         type: Schema.Types.ObjectId,
         ref: "Thought",
-      },
-    ],
+    },],
 
-    friends: [
-      {
+    friends: [{
         type: Schema.Types.ObjectId,
         ref: "User",
-      },
-    ]
-  },
-  {
-    toJSON: {
-      virtuals: true,
-      getters: true,
+    },],
     },
+    {
+      toJSON: {
+        virtuals: true
+      },
+      id:false,
+    }
+  );
+  const User = model("User", userSchema);
 
-    id: false,
-  }
-);
+  userSchema.virtual("friendCount").get(function(){
+    return this.friends.length;
+  });
 
-//get total amoutn user friends
-userSchema.virtual("friendCount").get(function() {
-  return this.friends.length;
-});
-
-//creates User model
-const User = model("User", userSchema);
-
-module.exports = User;
+  module.exports = User;
